@@ -1,0 +1,44 @@
+services:
+  # ── Collector ────────────────────────────────────────────
+  # Polls all sensors on a crontab schedule, writes:
+  #   data/allSensors<YYYYMMDDHHMMSS>.json  (what the frontend reads)
+  #   data/history.json                     (every check: online, response ms, errors)
+  #   data/status.json                      (current per-sensor state, last_connect)
+  collector:
+    build: ./collector
+    image: airmonitor-collector:latest
+    container_name: airmonitor-collector
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Tallinn}
+      CRON_SCHEDULE: ${CRON_SCHEDULE:-*/5 * * * *}
+      SENSOR_API_KEY: ${SENSOR_API_KEY}
+      POLL_TIMEOUT_S: ${POLL_TIMEOUT_S:-5}
+      SCAN_TIMEOUT_S: ${SCAN_TIMEOUT_S:-2}
+      DISCOVERY_RESCAN_MIN: ${DISCOVERY_RESCAN_MIN:-60}
+      HISTORY_RETENTION_DAYS: ${HISTORY_RETENTION_DAYS:-30}
+    volumes:
+      - ./data:/data
+      - ./config:/app/config:ro
+
+  # ── Frontend ─────────────────────────────────────────────
+  # Builds the React app from ../AirMonitorFrontend and serves it with the
+  # existing Flask backend. Library is the shared data/ folder, so
+  # /api/sensors always returns the collector's newest file.
+  frontend:
+    build:
+      context: ./frontend
+      additional_contexts:
+        frontend_src: ../AirMonitorFrontend
+    image: airmonitor-frontend:latest
+    container_name: airmonitor-frontend
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Tallinn}
+      # config.json (placements, aliases, PIN) lives in data/config/ next to
+      # the sensor data - visible on disk and moved together with the server
+      AIRMONITOR_CONFIG_DIR: /app/Library/config
+    ports:
+      - "${FRONTEND_PORT:-8080}:5000"
+    volumes:
+      - ./data:/app/Library
