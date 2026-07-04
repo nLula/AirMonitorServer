@@ -224,7 +224,7 @@ def update_history(checks: list[dict], now: datetime) -> None:
     write_json_atomic(HISTORY_FILE, history)
 
 
-def update_status(checks: list[dict], now: datetime) -> None:
+def update_status(checks: list[dict], now: datetime, known: dict) -> None:
     # Rebuilt from scratch each cycle so sensors removed from the registry
     # disappear; last_connect is carried over from the previous state.
     old = load_json(STATUS_FILE, {}).get("sensors", {})
@@ -236,6 +236,7 @@ def update_status(checks: list[dict], now: datetime) -> None:
         status["sensors"][key] = {
             "name": c["name"],
             "sensor_id": c.get("sensor_id"),
+            "first_seen": known.get(str(c.get("sensor_id")), {}).get("first_seen"),
             "url": c["url"],
             "online": c["online"],
             "last_check": c["timestamp"],
@@ -337,9 +338,13 @@ def main() -> None:
         found = discover_sensors(discovery["subnet"], int(discovery.get("port", 80)))
         last_scan = now.isoformat()
         for sid, hit in found.items():
+            prev = known.get(sid, {})
             known[sid] = {
                 "url": hit["url"],
                 "name": hit["result"]["data"].get("sensor_name") or f"sensor-{sid}",
+                # kept from the first discovery ever - drives the "new sensor"
+                # highlight in the frontend
+                "first_seen": prev.get("first_seen") or now.isoformat(),
             }
         # resolve sensors that were pending before the scan
         for i in pending:
@@ -408,7 +413,7 @@ def main() -> None:
         return
 
     update_history(checks, now)
-    update_status(checks, now)
+    update_status(checks, now, known)
     if readings:
         update_allsensors(readings, registry, now)
     else:
