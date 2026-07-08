@@ -22,8 +22,7 @@
     "  { \"url\": \"http://192.168.0.45/data\", \"name\": \"sensor-0\", \"floor\": \"Floor_10\", \"slot\": \"sensor_1\" }"
   ],
   "discovery": {
-    "_simulation": "TESTING: scanning the docker network. Real wifi subnet: 192.168.0.0/24 - restore it when the simulation is over.",
-    "subnet": "172.19.0.0/24",
+    "subnet": "192.168.0.0/24",
     "port": 80,
     "auto_add": true,
     "auto_add_floor": "Floor_10"
