@@ -1,0 +1,34 @@
+# AirMonitor - runtime deployment (prebuilt images, no source needed).
+# Images come from airmonitor-images.tar in this folder:
+#   docker load -i airmonitor-images.tar
+#   docker compose up -d
+# Built from the AirMonitorServer repo; rebuild there, re-save the tar,
+# copy it here.
+services:
+  collector:
+    image: airmonitor-collector:latest
+    container_name: airmonitor-collector
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Tallinn}
+      CRON_SCHEDULE: ${CRON_SCHEDULE:-*/5 * * * *}
+      SENSOR_API_KEY: ${SENSOR_API_KEY}
+      POLL_TIMEOUT_S: ${POLL_TIMEOUT_S:-5}
+      SCAN_TIMEOUT_S: ${SCAN_TIMEOUT_S:-2}
+      DISCOVERY_RESCAN_MIN: ${DISCOVERY_RESCAN_MIN:-60}
+      HISTORY_RETENTION_DAYS: ${HISTORY_RETENTION_DAYS:-30}
+    volumes:
+      - ./data:/data
+      - ./config:/app/config:ro
+
+  frontend:
+    image: airmonitor-frontend:latest
+    container_name: airmonitor-frontend
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Tallinn}
+      AIRMONITOR_CONFIG_DIR: /app/Library/config
+    ports:
+      - "${FRONTEND_PORT:-8080}:5000"
+    volumes:
+      - ./data:/app/Library

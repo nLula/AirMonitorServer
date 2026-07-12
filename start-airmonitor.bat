@@ -27,6 +27,16 @@ if not %errorlevel%==0 goto wait_engine
 echo       Docker engine is up.
 echo.
 
+rem On a fresh machine the images may not be loaded yet - restore them
+rem from the archive that travels with this folder.
+docker image inspect airmonitor-collector:latest >nul 2>&1
+if not %errorlevel%==0 (
+    if exist airmonitor-images.tar (
+        echo       Images not found - loading from airmonitor-images.tar...
+        docker load -i airmonitor-images.tar
+    )
+)
+
 echo [2/3] Starting AirMonitor containers...
 docker compose up -d
 if not %errorlevel%==0 goto compose_failed

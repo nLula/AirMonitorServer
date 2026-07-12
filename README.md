@@ -58,21 +58,25 @@ whenever the Docker engine starts. For hands-off operation:
    containers should say "running". View activity with
    `docker compose logs -f collector`.
 
+## Runtime folder
+
+Production runs from `C:\Users\TLL IT\Documents\AirMonitor` — a
+self-contained deployment folder (prebuilt images tar, image-only
+docker-compose.yml from [deploy/](deploy/), `.env`, `config/`, `data/`,
+`start-airmonitor.bat`, `airmonitor.ico`). This repo is the build home:
+after changing code, rebuild here, re-save the tar, copy it (and the
+updated bat, if changed) into the runtime folder.
+
 ## Moving to another PC
 
-Option A — with the repos (build from source):
-1. Install Docker Desktop, copy `AirMonitorServer` and `AirMonitorFrontend`
-   side by side, run `docker compose up -d --build` in AirMonitorServer.
-
-Option B — no repos needed (prebuilt images):
 1. Install Docker Desktop on the new machine.
-2. Copy the whole `AirMonitorServer` folder (it contains
-   `airmonitor-images.tar` with both images, plus config and all data).
-3. In the folder: `docker load -i airmonitor-images.tar`
-4. `docker compose up -d`  (compose finds the loaded images by name and
-   skips building)
-5. Add the firewall rule (see below) and check `discovery.subnet` matches
-   the new network.
+2. Copy the whole runtime folder `AirMonitor` (images, config, data,
+   startup script travel together).
+3. Run `start-airmonitor.bat` — it starts Docker, loads the images from
+   the tar automatically when missing, and brings the stack up.
+4. Add the firewall rule (see below) and check `discovery.subnet` matches
+   the new network. For autostart, put a shortcut to the bat into
+   shell:startup.
 
 After changing collector/frontend code, refresh the archive with:
 `docker compose build; docker save -o airmonitor-images.tar airmonitor-collector:latest airmonitor-frontend:latest`
