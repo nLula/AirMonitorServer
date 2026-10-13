@@ -1,0 +1,31 @@
+{
+  "_readme": [
+    "Sensors register themselves - no per-sensor config needed. The collector",
+    "scans discovery.subnet, identifies each device by the sensor_id its /data",
+    "endpoint reports (SENSOR_NUMBER in firmware), and adds it automatically",
+    "under the name its firmware reports (any name works). Floor assignment",
+    "and friendly aliases are managed in the frontend: Settings > Sensors.",
+    "",
+    "IPs are cached in data/known_ips.json; a full rescan runs at container",
+    "start, when a sensor stops answering, and every DISCOVERY_RESCAN_MIN",
+    "minutes (.env) - so new sensors appear on their own within that window,",
+    "or immediately after 'docker compose restart collector'.",
+    "",
+    "discovery.subnet - the wifi network to scan, e.g. 192.168.0.0/24 at home.",
+    "                   Change this when moving to the office network.",
+    "auto_add_floor   - floor new sensors land on: Floor_7 ... Floor_10.",
+    "",
+    "The sensors list below is for OPTIONAL overrides only, e.g. to pin a",
+    "sensor to a different floor/slot/name:",
+    "  { \"sensor_id\": 3, \"name\": \"sensor-3\", \"floor\": \"Floor_8\", \"slot\": \"sensor_1\" }",
+    "or a fixed address that skips discovery:",
+    "  { \"url\": \"http://192.168.0.45/data\", \"name\": \"sensor-0\", \"floor\": \"Floor_10\", \"slot\": \"sensor_1\" }"
+  ],
+  "discovery": {
+    "subnet": "192.168.0.0/24",
+    "port": 80,
+    "auto_add": true,
+    "auto_add_floor": "Floor_10"
+  },
+  "sensors": []
+}

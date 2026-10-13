@@ -1,0 +1,21 @@
+# Simulated sensor fleet for testing the frontend and collector.
+#
+#   start:  docker compose -f docker-compose.sim.yml up -d --build --scale simsensor=15
+#   stop:   docker compose -f docker-compose.sim.yml down
+#
+# The replicas join the main stack's network, so pointing
+# discovery.subnet in config/sensors.json at that network's subnet makes
+# the collector find them exactly like real sensors on the office wifi.
+services:
+  simsensor:
+    build: ./sim
+    image: airmonitor-simsensor:latest
+    restart: unless-stopped
+    environment:
+      SENSOR_API_KEY: ${SENSOR_API_KEY}
+      TZ: ${TZ:-Europe/Tallinn}
+
+networks:
+  default:
+    name: airmonitorserver_default
+    external: true
